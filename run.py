@@ -4,6 +4,7 @@ from pathlib import Path
 
 from grudge.feeds import NEWS_FEEDS, PORTFOLIO_FEEDS, TECH_FEEDS, fetch_feed
 from grudge.html_builder import build_page
+from grudge.market import fetch_dow
 from grudge.rewriter import rewrite_headline
 from grudge.scorer import rank_headlines
 from grudge.weather import fetch_weather
@@ -59,12 +60,17 @@ def main() -> None:
         f"Portfolio: {len(port_raw)} raw -> {len(port_unique)} unique -> {len(port_ranked)} selected"
     )
 
-    # Fetch weather
+    # Fetch weather + market
     print("\n=== WEATHER ===")
     weather = fetch_weather()
+    print("\n=== MARKET ===")
+    dow = fetch_dow()
+    if dow:
+        sign = "+" if dow["change"] >= 0 else ""
+        print(f"  [OK]   DJIA: {dow['price']:,.2f} ({sign}{dow['change']:,.2f})")
 
     # Build HTML
-    html = build_page(news_ranked, tech_ranked, port_ranked, weather=weather)
+    html = build_page(news_ranked, tech_ranked, port_ranked, weather=weather, dow=dow)
 
     # Write output
     out_dir = Path(__file__).parent / "docs"

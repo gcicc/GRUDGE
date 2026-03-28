@@ -60,6 +60,7 @@ def build_page(
     tech: list[dict] | None = None,
     portfolio: list[dict] | None = None,
     weather: list[dict] | None = None,
+    dow: dict | None = None,
 ) -> str:
     """Generate the full HTML page in 3-column Drudge Report layout."""
     now = datetime.now(timezone.utc).strftime("%A, %B %d, %Y %H:%M UTC")
@@ -93,12 +94,26 @@ def build_page(
             "</div>",
         ])
 
+    # Dow Jones line
+    dow_html = ""
+    if dow:
+        sign = "+" if dow["change"] >= 0 else ""
+        color = "#006400" if dow["change"] >= 0 else "#cc0000"
+        dow_ts = dow["timestamp"].strftime("%I:%M %p ET")
+        dow_html = (
+            f'<br><font size="2"><b>DJIA {dow["price"]:,.2f}</b> '
+            f'<font color="{color}">{sign}{dow["change"]:,.2f} '
+            f'({sign}{dow["change_pct"]:.2f}%)</font> '
+            f'<font color="#999999">as of {dow_ts}</font></font>'
+        )
+
     lines.extend([
         "",
         "<!-- HEADER -->",
         '<div style="text-align: center; padding: 10px 0;">',
         '<h1 style="font-size: 2.8em; margin: 0; letter-spacing: 3px;">GRUDGE REPORT</h1>',
         f'<font size="2" color="#333333">{now}</font>',
+        dow_html,
         "</div>",
         "<hr>",
     ])
