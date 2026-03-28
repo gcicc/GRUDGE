@@ -74,9 +74,10 @@ def test_tech_section_renders():
         assert h["title"] in html
 
 
-def test_no_tech_section_when_empty():
+def test_tech_column_always_present():
     html = build_page(_make_headlines(), tech=None)
-    assert "TECH &amp; AI" not in html
+    assert "TECH &amp; AI" in html
+    assert "THE MACHINES ARE SLEEPING" in html
 
 
 def test_portfolio_section_renders():
@@ -85,6 +86,7 @@ def test_portfolio_section_renders():
     assert "MY PORTFOLIO" in html
 
 
-def test_no_portfolio_when_empty():
+def test_portfolio_column_always_present():
     html = build_page(_make_headlines(), portfolio=None)
-    assert "MY PORTFOLIO" not in html
+    assert "MY PORTFOLIO" in html
+    assert "YOUR MONEY IS FINE" in html

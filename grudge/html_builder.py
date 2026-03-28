@@ -70,13 +70,9 @@ def build_page(
     """Generate the full HTML page in 3-column Drudge Report layout."""
     now = datetime.now(timezone.utc).strftime("%A, %B %d, %Y %H:%M UTC")
 
-    # Split news into 3 columns: left gets headlines 1-8, center 0 (top) + 9-16, right 17-24
+    # Col 1: All news, Col 2: All tech, Col 3: All portfolio
     top_story = news[0] if news else None
-    remaining = news[1:] if news else []
-    left_news, center_news, right_news = _split_list(remaining, 3)
-
-    # Tech goes in center column below news
-    # Portfolio goes in right column below news
+    remaining_news = news[1:] if news else []
 
     lines = [
         "<!DOCTYPE html>",
@@ -118,66 +114,59 @@ def build_page(
         '<table width="100%" cellpadding="8" cellspacing="0" border="0">',
         "<tr valign=\"top\">",
         "",
-        "<!-- LEFT COLUMN -->",
+        "<!-- LEFT COLUMN: US & WORLD NEWS -->",
         '<td width="33%" style="border-right: 1px solid #cccccc; padding: 8px; font-size: 14px;">',
+        '<div style="text-align: center; padding: 4px 0; background-color: #f0f0f0;">',
+        '<font size="3"><b>US &amp; WORLD NEWS</b></font>',
+        "</div>",
+        "<hr>",
     ])
 
-    # Left column: news headlines
-    if not left_news:
-        lines.append("<b>NO HEADLINES AVAILABLE.</b>")
+    if not remaining_news:
+        lines.append("<b>NO HEADLINES AVAILABLE. THE MEDIA IS HIDING SOMETHING.</b>")
     else:
-        for h in left_news:
+        for h in remaining_news:
             lines.append(_headline_block(h))
 
     lines.extend([
         "</td>",
         "",
-        "<!-- CENTER COLUMN -->",
+        "<!-- CENTER COLUMN: TECH & AI -->",
         '<td width="34%" style="border-right: 1px solid #cccccc; padding: 8px; font-size: 14px;">',
+        '<div style="text-align: center; padding: 4px 0; background-color: #f0f0f0;">',
+        '<font size="3"><b>TL;DR &mdash; TECH &amp; AI</b></font><br>',
+        '<font size="1" color="#555555">What the machines are up to</font>',
+        "</div>",
+        "<hr>",
     ])
 
-    # Center column: news + tech
-    for h in center_news:
-        lines.append(_headline_block(h))
-
     if tech:
-        lines.extend([
-            "<hr>",
-            '<div style="text-align: center; padding: 4px 0; background-color: #f0f0f0;">',
-            '<font size="3"><b>TL;DR &mdash; TECH &amp; AI</b></font><br>',
-            '<font size="1" color="#555555">What the machines are up to</font>',
-            "</div>",
-            "<hr>",
-        ])
         for h in tech:
             lines.append(
                 f"<b>{_link(h)}</b>"
                 f'<br><font size="1" color="#666666">{h["source"]} | '
                 f"{_time_ago(h['published'])}</font><br><br>"
             )
+    else:
+        lines.append("<b>NO TECH NEWS. THE MACHINES ARE SLEEPING.</b>")
 
     lines.extend([
         "</td>",
         "",
-        "<!-- RIGHT COLUMN -->",
+        "<!-- RIGHT COLUMN: MY PORTFOLIO -->",
         '<td width="33%" style="padding: 8px; font-size: 14px;">',
+        '<div style="text-align: center; padding: 4px 0; background-color: #e8f5e9;">',
+        '<font size="3"><b>MY PORTFOLIO</b></font><br>',
+        '<font size="1" color="#555555">What your money is doing</font>',
+        "</div>",
+        "<hr>",
     ])
 
-    # Right column: news + portfolio
-    for h in right_news:
-        lines.append(_headline_block(h))
-
     if portfolio:
-        lines.extend([
-            "<hr>",
-            '<div style="text-align: center; padding: 4px 0; background-color: #e8f5e9;">',
-            '<font size="3"><b>MY PORTFOLIO</b></font><br>',
-            '<font size="1" color="#555555">What your money is doing</font>',
-            "</div>",
-            "<hr>",
-        ])
         for h in portfolio:
             lines.append(_portfolio_block(h))
+    else:
+        lines.append("<b>NO PORTFOLIO NEWS. YOUR MONEY IS FINE. PROBABLY.</b>")
 
     lines.extend([
         "</td>",
