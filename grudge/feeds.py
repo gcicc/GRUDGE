@@ -18,14 +18,20 @@ NEWS_FEEDS = [
 ]
 
 TECH_FEEDS = [
-    {"name": "TechCrunch", "url": "https://techcrunch.com/feed/"},
-    {"name": "The Verge", "url": "https://www.theverge.com/rss/index.xml"},
-    {"name": "Ars Technica", "url": "https://feeds.arstechnica.com/arstechnica/index"},
-    {"name": "Hacker News", "url": "https://hnrss.org/frontpage"},
+    # AI company news & funding
+    {"name": "TechCrunch AI", "url": "https://techcrunch.com/category/artificial-intelligence/feed/"},
     {"name": "VentureBeat AI", "url": "https://venturebeat.com/category/ai/feed/"},
-    {"name": "MIT Tech Review", "url": "https://www.technologyreview.com/feed/"},
     {"name": "The Information", "url": "https://www.theinformation.com/feed"},
-    {"name": "Wired", "url": "https://www.wired.com/feed/rss"},
+    # AI research & tools
+    {"name": "MIT Tech Review", "url": "https://www.technologyreview.com/feed/"},
+    {"name": "OpenAI Blog", "url": "https://openai.com/blog/rss.xml"},
+    {"name": "Google AI Blog", "url": "https://blog.google/technology/ai/rss/"},
+    # Developer & startup ecosystem
+    {"name": "Hacker News", "url": "https://hnrss.org/frontpage"},
+    {"name": "TechCrunch", "url": "https://techcrunch.com/feed/"},
+    {"name": "The Verge AI", "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"},
+    # Big tech moves & IPOs
+    {"name": "Google News AI", "url": "https://news.google.com/rss/search?q=artificial+intelligence+company&hl=en-US&gl=US&ceid=US:en"},
 ]
 
 # Tickers from E*Trade portfolios (IRA, Post-Tax, Roth)

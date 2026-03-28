@@ -1,6 +1,5 @@
 """Raw HTML generation — Times New Roman, blue links, 3-column Drudge layout."""
 
-import random
 from datetime import datetime, timezone
 
 
@@ -18,12 +17,6 @@ def _time_ago(published: datetime) -> str:
         return f"{hours}h ago"
     days = hours // 24
     return f"{days}d ago"
-
-
-def _traffic_counter() -> str:
-    """Fake traffic counter that looks impressive."""
-    count = random.randint(8_000_000, 45_000_000)
-    return f"{count:,}"
 
 
 def _link(h: dict, color: str = "blue") -> str:
@@ -66,6 +59,7 @@ def build_page(
     news: list[dict],
     tech: list[dict] | None = None,
     portfolio: list[dict] | None = None,
+    weather: list[dict] | None = None,
 ) -> str:
     """Generate the full HTML page in 3-column Drudge Report layout."""
     now = datetime.now(timezone.utc).strftime("%A, %B %d, %Y %H:%M UTC")
@@ -84,15 +78,30 @@ def build_page(
         "</head>",
         '<body style="font-family: \'Times New Roman\', Times, serif; '
         "margin: 0; padding: 0; background-color: #ffffff;\">",
+    ]
+
+    # WEATHER BANNER
+    if weather:
+        weather_parts = " &nbsp;&bull;&nbsp; ".join(
+            f"<b>{w['name']}:</b> {w['weather']}" for w in weather
+        )
+        lines.extend([
+            "",
+            '<div style="background-color: #1a1a2e; color: #e0e0e0; text-align: center; '
+            'padding: 4px 10px; font-size: 12px;">',
+            weather_parts,
+            "</div>",
+        ])
+
+    lines.extend([
         "",
         "<!-- HEADER -->",
         '<div style="text-align: center; padding: 10px 0;">',
         '<h1 style="font-size: 2.8em; margin: 0; letter-spacing: 3px;">GRUDGE REPORT</h1>',
-        f'<font size="2" color="#333333">{now}</font><br>',
-        f'<font size="1" color="#666666">{_traffic_counter()} VISITS THIS MONTH</font>',
+        f'<font size="2" color="#333333">{now}</font>',
         "</div>",
         "<hr>",
-    ]
+    ])
 
     # TOP STORY — full width banner
     if top_story:

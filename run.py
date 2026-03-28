@@ -6,6 +6,7 @@ from grudge.feeds import NEWS_FEEDS, PORTFOLIO_FEEDS, TECH_FEEDS, fetch_feed
 from grudge.html_builder import build_page
 from grudge.rewriter import rewrite_headline
 from grudge.scorer import rank_headlines
+from grudge.weather import fetch_weather
 
 
 def dedupe(headlines: list[dict]) -> list[dict]:
@@ -42,7 +43,7 @@ def main() -> None:
     print("\n=== TECH & AI FEEDS ===")
     tech_raw = _fetch_section(TECH_FEEDS)
     tech_unique = dedupe(tech_raw)
-    tech_ranked = rank_headlines(tech_unique, limit=10)
+    tech_ranked = rank_headlines(tech_unique, limit=15)
     for h in tech_ranked:
         h["title"] = rewrite_headline(h["title"])
     print(f"Tech: {len(tech_raw)} raw -> {len(tech_unique)} unique -> {len(tech_ranked)} selected")
@@ -58,8 +59,12 @@ def main() -> None:
         f"Portfolio: {len(port_raw)} raw -> {len(port_unique)} unique -> {len(port_ranked)} selected"
     )
 
+    # Fetch weather
+    print("\n=== WEATHER ===")
+    weather = fetch_weather()
+
     # Build HTML
-    html = build_page(news_ranked, tech_ranked, port_ranked)
+    html = build_page(news_ranked, tech_ranked, port_ranked, weather=weather)
 
     # Write output
     out_dir = Path(__file__).parent / "docs"
