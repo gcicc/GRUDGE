@@ -1,4 +1,4 @@
-"""Raw HTML generation — Times New Roman, blue links, 1997 aesthetic."""
+"""Raw HTML generation — Times New Roman, blue links, 3-column Drudge layout."""
 
 import random
 from datetime import datetime, timezone
@@ -26,55 +26,40 @@ def _traffic_counter() -> str:
     return f"{count:,}"
 
 
-def _render_top_story(h: dict) -> list[str]:
-    """Render the dominant top story."""
+def _link(h: dict, color: str = "blue") -> str:
+    """Render a single headline link."""
     prefix = "\U0001f6a8 " if h.get("breaking") else ""
-    return [
-        '<div style="text-align: center; padding: 10px 0;">',
-        f'<h2 style="font-size: 1.8em; margin: 5px 0;">'
-        f'<a href="{h["link"]}" style="color: #cc0000; text-decoration: none;">'
-        f'{prefix}{h["title"]}</a></h2>',
-        f'<p style="font-size: 0.85em; color: #555;">{h["source"]} | {_time_ago(h["published"])}</p>',
-        "</div>",
-        "<hr>",
-    ]
+    return (
+        f'<a href="{h["link"]}" style="color: {color};">'
+        f"{prefix}{h['title']}</a>"
+    )
 
 
-def _render_headline(h: dict) -> list[str]:
-    """Render a single headline row."""
-    prefix = "\U0001f6a8 " if h.get("breaking") else ""
-    return [
-        "<p>",
-        f'<a href="{h["link"]}" style="color: blue; text-decoration: underline;">'
-        f"<b>{prefix}{h['title']}</b></a>",
-        f'<br><small style="color: #666;">{h["source"]} | {_time_ago(h["published"])}</small>',
-        "</p>",
-    ]
+def _headline_block(h: dict) -> str:
+    """A headline with source line underneath."""
+    return (
+        f"<b>{_link(h)}</b>"
+        f'<br><font size="1" color="#666666">{h["source"]} | {_time_ago(h["published"])}</font>'
+        f"<br><br>"
+    )
 
 
-def _render_tech_item(h: dict) -> list[str]:
-    """Render a tech/AI item with TL;DR style summary."""
-    return [
-        '<div style="margin-bottom: 12px;">',
-        f'<a href="{h["link"]}" style="color: blue; text-decoration: underline;">'
-        f"<b>{h['title']}</b></a>",
-        f'<br><small style="color: #666;">{h["source"]} | {_time_ago(h["published"])}</small>',
-        "</div>",
-    ]
-
-
-def _render_portfolio_item(h: dict) -> list[str]:
-    """Render a portfolio news item with ticker badge."""
+def _portfolio_block(h: dict) -> str:
+    """Portfolio headline with ticker badge."""
     ticker = h.get("source", "")
-    return [
-        '<div style="margin-bottom: 12px;">',
-        f'<span style="background-color: #006400; color: white; padding: 1px 6px; '
-        f'font-size: 0.8em; font-weight: bold;">{ticker}</span> ',
-        f'<a href="{h["link"]}" style="color: blue; text-decoration: underline;">'
-        f"<b>{h['title']}</b></a>",
-        f'<br><small style="color: #666;">{_time_ago(h["published"])}</small>',
-        "</div>",
-    ]
+    return (
+        f'<font style="background-color: #006400; color: white; padding: 1px 5px; '
+        f'font-size: 10px;"><b>{ticker}</b></font> '
+        f'{_link(h)}'
+        f'<br><font size="1" color="#666666">{_time_ago(h["published"])}</font>'
+        f"<br><br>"
+    )
+
+
+def _split_list(items: list, n: int) -> list[list]:
+    """Split a list into n roughly equal parts."""
+    k, m = divmod(len(items), n)
+    return [items[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n)]
 
 
 def build_page(
@@ -82,8 +67,16 @@ def build_page(
     tech: list[dict] | None = None,
     portfolio: list[dict] | None = None,
 ) -> str:
-    """Generate the full HTML page with news + optional tech + portfolio sections."""
+    """Generate the full HTML page in 3-column Drudge Report layout."""
     now = datetime.now(timezone.utc).strftime("%A, %B %d, %Y %H:%M UTC")
+
+    # Split news into 3 columns: left gets headlines 1-8, center 0 (top) + 9-16, right 17-24
+    top_story = news[0] if news else None
+    remaining = news[1:] if news else []
+    left_news, center_news, right_news = _split_list(remaining, 3)
+
+    # Tech goes in center column below news
+    # Portfolio goes in right column below news
 
     lines = [
         "<!DOCTYPE html>",
@@ -94,60 +87,105 @@ def build_page(
         "<title>GRUDGE REPORT</title>",
         "</head>",
         '<body style="font-family: \'Times New Roman\', Times, serif; '
-        'max-width: 640px; margin: 0 auto; padding: 10px; '
-        'background-color: #ffffff;">',
+        "margin: 0; padding: 0; background-color: #ffffff;\">",
         "",
-        '<div style="text-align: center;">',
-        '<h1 style="font-size: 2.5em; margin-bottom: 0; letter-spacing: 2px;">GRUDGE REPORT</h1>',
-        f'<p style="font-size: 0.9em; color: #333;">{now}</p>',
-        f'<p style="font-size: 0.8em; color: #666;">{_traffic_counter()} VISITS THIS MONTH</p>',
+        "<!-- HEADER -->",
+        '<div style="text-align: center; padding: 10px 0;">',
+        '<h1 style="font-size: 2.8em; margin: 0; letter-spacing: 3px;">GRUDGE REPORT</h1>',
+        f'<font size="2" color="#333333">{now}</font><br>',
+        f'<font size="1" color="#666666">{_traffic_counter()} VISITS THIS MONTH</font>',
         "</div>",
         "<hr>",
     ]
 
-    # === NEWS SECTION ===
-    if not news:
-        lines.append("<p><b>NO HEADLINES AVAILABLE. THE MEDIA IS HIDING SOMETHING.</b></p>")
-        lines.append("<hr>")
-    else:
-        lines.extend(_render_top_story(news[0]))
-        for h in news[1:]:
-            lines.extend(_render_headline(h))
-        lines.append("<hr>")
+    # TOP STORY — full width banner
+    if top_story:
+        prefix = "\U0001f6a8 " if top_story.get("breaking") else ""
+        lines.extend([
+            '<div style="text-align: center; padding: 8px 20px;">',
+            f'<font size="5"><b>'
+            f'<a href="{top_story["link"]}" style="color: #cc0000; text-decoration: none;">'
+            f'{prefix}{top_story["title"]}</a></b></font>',
+            f'<br><font size="1" color="#555555">'
+            f'{top_story["source"]} | {_time_ago(top_story["published"])}</font>',
+            "</div>",
+            "<hr>",
+        ])
 
-    # === TECH & AI SECTION ===
+    # 3-COLUMN LAYOUT via table (Drudge style — no CSS grid, just raw tables)
+    lines.extend([
+        "",
+        '<table width="100%" cellpadding="8" cellspacing="0" border="0">',
+        "<tr valign=\"top\">",
+        "",
+        "<!-- LEFT COLUMN -->",
+        '<td width="33%" style="border-right: 1px solid #cccccc; padding: 8px; font-size: 14px;">',
+    ])
+
+    # Left column: news headlines
+    if not left_news:
+        lines.append("<b>NO HEADLINES AVAILABLE.</b>")
+    else:
+        for h in left_news:
+            lines.append(_headline_block(h))
+
+    lines.extend([
+        "</td>",
+        "",
+        "<!-- CENTER COLUMN -->",
+        '<td width="34%" style="border-right: 1px solid #cccccc; padding: 8px; font-size: 14px;">',
+    ])
+
+    # Center column: news + tech
+    for h in center_news:
+        lines.append(_headline_block(h))
+
     if tech:
         lines.extend([
-            "",
-            '<div style="text-align: center; padding: 10px 0; background-color: #f0f0f0;">',
-            '<h2 style="font-size: 1.4em; margin: 5px 0; letter-spacing: 1px;">'
-            "TL;DR &mdash; TECH &amp; AI</h2>",
-            '<p style="font-size: 0.8em; color: #555;">What the machines are up to</p>',
+            "<hr>",
+            '<div style="text-align: center; padding: 4px 0; background-color: #f0f0f0;">',
+            '<font size="3"><b>TL;DR &mdash; TECH &amp; AI</b></font><br>',
+            '<font size="1" color="#555555">What the machines are up to</font>',
             "</div>",
             "<hr>",
         ])
         for h in tech:
-            lines.extend(_render_tech_item(h))
-        lines.append("<hr>")
+            lines.append(
+                f"<b>{_link(h)}</b>"
+                f'<br><font size="1" color="#666666">{h["source"]} | '
+                f"{_time_ago(h['published'])}</font><br><br>"
+            )
 
-    # === PORTFOLIO SECTION ===
+    lines.extend([
+        "</td>",
+        "",
+        "<!-- RIGHT COLUMN -->",
+        '<td width="33%" style="padding: 8px; font-size: 14px;">',
+    ])
+
+    # Right column: news + portfolio
+    for h in right_news:
+        lines.append(_headline_block(h))
+
     if portfolio:
         lines.extend([
-            "",
-            '<div style="text-align: center; padding: 10px 0; background-color: #e8f5e9;">',
-            '<h2 style="font-size: 1.4em; margin: 5px 0; letter-spacing: 1px;">'
-            "MY PORTFOLIO &mdash; NEWS</h2>",
-            '<p style="font-size: 0.8em; color: #555;">What your money is doing</p>',
+            "<hr>",
+            '<div style="text-align: center; padding: 4px 0; background-color: #e8f5e9;">',
+            '<font size="3"><b>MY PORTFOLIO</b></font><br>',
+            '<font size="1" color="#555555">What your money is doing</font>',
             "</div>",
             "<hr>",
         ])
         for h in portfolio:
-            lines.extend(_render_portfolio_item(h))
-        lines.append("<hr>")
+            lines.append(_portfolio_block(h))
 
-    # Footer
     lines.extend([
-        '<p style="text-align: center; font-size: 0.75em; color: #999;">',
+        "</td>",
+        "</tr>",
+        "</table>",
+        "",
+        "<hr>",
+        '<p style="text-align: center; font-size: 11px; color: #999999;">',
         "GRUDGE REPORT &copy; 2025. All links property of their respective owners.",
         "<br>Aggregated by robots. Read by patriots.",
         "</p>",

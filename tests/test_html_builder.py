@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from grudge.html_builder import build_page
 
 
-def _make_headlines(n: int = 5) -> list[dict]:
+def _make_headlines(n: int = 10) -> list[dict]:
     return [
         {
             "title": f"Headline {i}",
@@ -59,9 +59,11 @@ def test_breaking_emoji():
     assert "\U0001f6a8" in html
 
 
-def test_has_hr_separators():
+def test_has_3_column_table():
     html = build_page(_make_headlines())
-    assert html.count("<hr>") >= 2
+    assert "LEFT COLUMN" in html
+    assert "CENTER COLUMN" in html
+    assert "RIGHT COLUMN" in html
 
 
 def test_tech_section_renders():
@@ -75,3 +77,14 @@ def test_tech_section_renders():
 def test_no_tech_section_when_empty():
     html = build_page(_make_headlines(), tech=None)
     assert "TECH &amp; AI" not in html
+
+
+def test_portfolio_section_renders():
+    port = _make_headlines(3)
+    html = build_page(_make_headlines(), portfolio=port)
+    assert "MY PORTFOLIO" in html
+
+
+def test_no_portfolio_when_empty():
+    html = build_page(_make_headlines(), portfolio=None)
+    assert "MY PORTFOLIO" not in html
