@@ -5,16 +5,21 @@ from datetime import datetime, timezone
 import feedparser
 
 NEWS_FEEDS = [
+    # US national
     {"name": "Fox News", "url": "https://moxie.foxnews.com/google-publisher/latest.xml"},
     {"name": "NY Times", "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"},
     {"name": "NY Post", "url": "https://nypost.com/feed/"},
-    {"name": "Daily Mail", "url": "https://www.dailymail.co.uk/news/index.rss"},
-    {"name": "BBC", "url": "https://feeds.bbci.co.uk/news/rss.xml"},
     {"name": "CNN", "url": "http://rss.cnn.com/rss/cnn_topstories.rss"},
     {"name": "Washington Post", "url": "https://feeds.washingtonpost.com/rss/national"},
     {"name": "Breitbart", "url": "https://feeds.feedburner.com/breitbart"},
     {"name": "The Hill", "url": "https://thehill.com/feed/"},
     {"name": "Politico", "url": "https://www.politico.com/rss/politicopicks.xml"},
+    {"name": "AP Top News", "url": "https://news.google.com/rss/search?q=site:apnews.com&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "Reuters US", "url": "https://news.google.com/rss/search?q=site:reuters.com+when:1d&hl=en-US&gl=US&ceid=US:en"},
+    # World
+    {"name": "BBC World", "url": "https://feeds.bbci.co.uk/news/world/rss.xml"},
+    {"name": "Al Jazeera", "url": "https://www.aljazeera.com/xml/rss/all.xml"},
+    {"name": "Google World", "url": "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en"},
 ]
 
 TECH_FEEDS = [

@@ -1,6 +1,24 @@
 """Raw HTML generation — Times New Roman, blue links, 3-column Drudge layout."""
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+
+
+def _days_until(target: date) -> int:
+    """Whole days from today (UTC) until target date."""
+    return (target - datetime.now(timezone.utc).date()).days
+
+
+def _countdown_html() -> str:
+    """Top-left countdown box."""
+    d1 = _days_until(date(2032, 4, 4))
+    d2 = _days_until(date(2032, 12, 31))
+    return (
+        '<div style="position: absolute; top: 8px; left: 10px; text-align: left; '
+        'font-size: 11px; color: #333333; line-height: 1.5;">'
+        f'<b>{d1:,}</b> DAYS TIL APR 4, 2032<br>'
+        f'<b>{d2:,}</b> DAYS TIL DEC 31, 2032'
+        "</div>"
+    )
 
 
 def _time_ago(published: datetime) -> str:
@@ -110,7 +128,8 @@ def build_page(
     lines.extend([
         "",
         "<!-- HEADER -->",
-        '<div style="text-align: center; padding: 10px 0;">',
+        '<div style="position: relative; text-align: center; padding: 10px 0;">',
+        _countdown_html(),
         '<h1 style="font-size: 2.8em; margin: 0; letter-spacing: 3px;">GRUDGE REPORT</h1>',
         f'<font size="2" color="#333333">{now}</font>',
         dow_html,

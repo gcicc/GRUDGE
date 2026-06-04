@@ -1,5 +1,6 @@
 """GRUDGE entry point: fetch -> dedupe -> score -> rewrite -> build -> write."""
 
+import re
 from pathlib import Path
 
 from grudge.feeds import NEWS_FEEDS, PORTFOLIO_FEEDS, TECH_FEEDS, fetch_feed
@@ -9,14 +10,30 @@ from grudge.rewriter import rewrite_headline
 from grudge.scorer import rank_headlines
 from grudge.weather import fetch_weather
 
+# Trailing " - Publisher" / " | Publisher" suffix (Google News style)
+_PUBLISHER_SUFFIX = re.compile(r"\s+[-–—|]\s+[^-–—|]{1,40}$")
 
-def dedupe(headlines: list[dict]) -> list[dict]:
-    """Remove exact duplicate titles."""
-    seen: set[str] = set()
+
+def _dedupe_key(title: str) -> str:
+    """Normalize a headline so near-duplicates collapse to the same key."""
+    key = title.lower().strip()
+    key = _PUBLISHER_SUFFIX.sub("", key)  # drop trailing publisher attribution
+    key = re.sub(r"[^a-z0-9]+", " ", key).strip()  # ignore punctuation/whitespace
+    return key
+
+
+def dedupe(headlines: list[dict], seen: set[str] | None = None) -> list[dict]:
+    """Remove duplicate titles (normalized).
+
+    Pass a shared ``seen`` set across sections to prevent the same story
+    appearing in more than one column.
+    """
+    if seen is None:
+        seen = set()
     unique = []
     for h in headlines:
-        key = h["title"].lower().strip()
-        if key not in seen:
+        key = _dedupe_key(h["title"])
+        if key and key not in seen:
             seen.add(key)
             unique.append(h)
     return unique
@@ -31,10 +48,13 @@ def _fetch_section(feeds: list[dict]) -> list[dict]:
 
 
 def main() -> None:
+    # Shared across sections so no story appears in more than one column
+    seen: set[str] = set()
+
     # Fetch news
     print("=== NEWS FEEDS ===")
     news_raw = _fetch_section(NEWS_FEEDS)
-    news_unique = dedupe(news_raw)
+    news_unique = dedupe(news_raw, seen)
     news_ranked = rank_headlines(news_unique, limit=25)
     for h in news_ranked:
         h["title"] = rewrite_headline(h["title"])
@@ -43,7 +63,7 @@ def main() -> None:
     # Fetch tech/AI
     print("\n=== TECH & AI FEEDS ===")
     tech_raw = _fetch_section(TECH_FEEDS)
-    tech_unique = dedupe(tech_raw)
+    tech_unique = dedupe(tech_raw, seen)
     tech_ranked = rank_headlines(tech_unique, limit=15)
     for h in tech_ranked:
         h["title"] = rewrite_headline(h["title"])
@@ -52,7 +72,7 @@ def main() -> None:
     # Fetch portfolio news
     print("\n=== PORTFOLIO FEEDS ===")
     port_raw = _fetch_section(PORTFOLIO_FEEDS)
-    port_unique = dedupe(port_raw)
+    port_unique = dedupe(port_raw, seen)
     port_ranked = rank_headlines(port_unique, limit=15)
     for h in port_ranked:
         h["title"] = rewrite_headline(h["title"])
