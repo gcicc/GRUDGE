@@ -2,6 +2,8 @@
 
 from datetime import date, datetime, timezone
 
+from grudge.market import tz_label
+
 
 def _days_until(target: date) -> int:
     """Whole days from today (UTC) until target date."""
@@ -140,7 +142,7 @@ def build_page(
     if dow:
         sign = "+" if dow["change"] >= 0 else ""
         color = "#006400" if dow["change"] >= 0 else "#cc0000"
-        dow_ts = dow["timestamp"].strftime("%I:%M %p ET")
+        dow_ts = dow["timestamp"].strftime("%I:%M %p ") + tz_label(dow["timestamp"])
         dow_html = (
             f'<br><font size="2"><b>DJIA {dow["price"]:,.2f}</b> '
             f'<font color="{color}">{sign}{dow["change"]:,.2f} '

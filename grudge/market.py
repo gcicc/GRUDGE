@@ -1,16 +1,28 @@
 """Fetch market data (Dow Jones) from Yahoo Finance. Free, no API key."""
 
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import requests
 
-NEW_YORK = ZoneInfo("America/New_York")
+# Linux (GitHub Actions, where this runs) ships the tz database. Windows does not
+# unless tzdata is installed; there we fall back to UTC and label it UTC — never a
+# UTC time labelled ET, which was the original bug.
+try:
+    NEW_YORK: ZoneInfo | None = ZoneInfo("America/New_York")
+except ZoneInfoNotFoundError:
+    NEW_YORK = None
 
 
 def epoch_to_et(epoch: int | float) -> datetime:
-    """Convert a Unix timestamp to a timezone-aware America/New_York datetime."""
-    return datetime.fromtimestamp(epoch, tz=timezone.utc).astimezone(NEW_YORK)
+    """Convert a Unix timestamp to New York time, or UTC if no tz database."""
+    utc = datetime.fromtimestamp(epoch, tz=timezone.utc)
+    return utc.astimezone(NEW_YORK) if NEW_YORK else utc
+
+
+def tz_label(ts: datetime) -> str:
+    """The honest label for a timestamp from epoch_to_et."""
+    return "ET" if NEW_YORK and ts.tzinfo == NEW_YORK else "UTC"
 
 
 def fetch_dow() -> dict | None:
