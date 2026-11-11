@@ -90,3 +90,16 @@ def test_portfolio_column_always_present():
     html = build_page(_make_headlines(), portfolio=None)
     assert "MY PORTFOLIO" in html
     assert "YOUR MONEY IS FINE" in html
+
+
+def test_footer_year_is_current():
+    html = build_page(_make_headlines())
+    assert f"&copy; {datetime.now(timezone.utc).year}" in html
+
+
+def test_network_chrome_and_phone_css():
+    html = build_page(_make_headlines())
+    assert 'data-section="grudge"' in html
+    assert "https://gcicc.github.io/suite/network.js" in html
+    assert "@media (max-width: 640px)" in html
+    assert 'class="cols"' in html and 'class="cd"' in html

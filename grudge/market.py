@@ -1,8 +1,16 @@
 """Fetch market data (Dow Jones) from Yahoo Finance. Free, no API key."""
 
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 import requests
+
+NEW_YORK = ZoneInfo("America/New_York")
+
+
+def epoch_to_et(epoch: int | float) -> datetime:
+    """Convert a Unix timestamp to a timezone-aware America/New_York datetime."""
+    return datetime.fromtimestamp(epoch, tz=timezone.utc).astimezone(NEW_YORK)
 
 
 def fetch_dow() -> dict | None:
@@ -22,9 +30,7 @@ def fetch_dow() -> dict | None:
         prev_close = meta["chartPreviousClose"]
         change = price - prev_close
         change_pct = (change / prev_close) * 100
-        ts = datetime.fromtimestamp(
-            meta["regularMarketTime"], tz=timezone.utc
-        )
+        ts = epoch_to_et(meta["regularMarketTime"])
         return {
             "price": price,
             "change": change,

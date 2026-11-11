@@ -8,12 +8,33 @@ def _days_until(target: date) -> int:
     return (target - datetime.now(timezone.utc).date()).days
 
 
+# Phone-width fixes only; the Drudge look is intentional and left untouched above 640px.
+_PHONE_CSS = (
+    "<style>@media (max-width: 640px) {"
+    " .cd { position: static !important; text-align: center !important; padding-bottom: 4px; }"
+    " table.cols, table.cols tbody, table.cols tr, table.cols td"
+    " { display: block !important; width: 100% !important; box-sizing: border-box; }"
+    " table.cols td { border-right: none !important; }"
+    "}</style>"
+)
+
+
+def _network_snippet() -> str:
+    """RANGE network chrome (shared masthead/footer), loaded from the suite Pages site."""
+    built = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    return (
+        '<link rel="stylesheet" href="https://gcicc.github.io/suite/network.css">\n'
+        '<script src="https://gcicc.github.io/suite/network.js" data-section="grudge" '
+        f'data-built="{built}" data-next="every 2h" defer></script>'
+    )
+
+
 def _countdown_html() -> str:
     """Top-left countdown box."""
     d1 = _days_until(date(2032, 4, 4))
     d2 = _days_until(date(2032, 12, 31))
     return (
-        '<div style="position: absolute; top: 8px; left: 10px; text-align: left; '
+        '<div class="cd" style="position: absolute; top: 8px; left: 10px; text-align: left; '
         'font-size: 11px; color: #333333; line-height: 1.5;">'
         f'<b>{d1:,}</b> DAYS TIL APR 4, 2032<br>'
         f'<b>{d2:,}</b> DAYS TIL DEC 31, 2032'
@@ -94,6 +115,8 @@ def build_page(
         '<meta charset="utf-8">',
         '<meta name="viewport" content="width=device-width, initial-scale=1">',
         "<title>GRUDGE REPORT</title>",
+        _PHONE_CSS,
+        _network_snippet(),
         "</head>",
         '<body style="font-family: \'Times New Roman\', Times, serif; '
         "margin: 0; padding: 0; background-color: #ffffff;\">",
@@ -154,7 +177,7 @@ def build_page(
     # 3-COLUMN LAYOUT via table (Drudge style — no CSS grid, just raw tables)
     lines.extend([
         "",
-        '<table width="100%" cellpadding="8" cellspacing="0" border="0">',
+        '<table class="cols" width="100%" cellpadding="8" cellspacing="0" border="0">',
         "<tr valign=\"top\">",
         "",
         "<!-- LEFT COLUMN: US & WORLD NEWS -->",
@@ -218,7 +241,7 @@ def build_page(
         "",
         "<hr>",
         '<p style="text-align: center; font-size: 11px; color: #999999;">',
-        "GRUDGE REPORT &copy; 2025. All links property of their respective owners.",
+        f"GRUDGE REPORT &copy; {datetime.now(timezone.utc).year}. All links property of their respective owners.",
         "<br>Aggregated by robots. Read by patriots.",
         "</p>",
         "</body>",
