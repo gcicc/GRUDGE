@@ -22,7 +22,7 @@ _PHONE_CSS = (
 
 
 def _network_snippet() -> str:
-    """RANGER network chrome (shared masthead/footer), loaded from the suite Pages site."""
+    """Telemetrics network chrome (shared masthead/footer), loaded from the suite Pages site."""
     built = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     return (
         '<link rel="stylesheet" href="https://gcicc.github.io/suite/network.css">\n'
